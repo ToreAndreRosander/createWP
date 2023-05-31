@@ -20,7 +20,7 @@ def create_database(db_name, db_user, db_password, db_root_password):
     grant_permissions_command = f"mysql -u root -p{db_root_password} -e 'GRANT ALL PRIVILEGES ON {db_name}.* TO '{db_user}'@'localhost';'"
     subprocess.run(grant_permissions_command, shell=True)
 
-def create_wp_config(db_name, db_user, db_password):
+def create_wp_config(db_name, db_user, db_password, project_name):
     wp_config_template = '''
     <?php
     define( 'DB_NAME', '{db_name}' );
@@ -34,10 +34,16 @@ def create_wp_config(db_name, db_user, db_password):
     if ( ! defined( 'ABSPATH' ) ) {
         define( 'ABSPATH', __DIR__ . '/' );
     }
+    define( 'WP_SITEURL', 'http://{project_name}.com' );
+    define( 'WP_HOME', 'http://{project_name}.com' );
+    define( 'WP_CONTENT_DIR', dirname( __FILE__ ) . '/wp-content' );
+    define( 'WP_CONTENT_URL', 'http://{project_name}.com/wp-content' );
+    define( 'WP_DEFAULT_THEME', 'twentytwentytwo' );
+
     require_once ABSPATH . 'wp-settings.php';
     '''
 
-    wp_config_content = wp_config_template.format(db_name=db_name, db_user=db_user, db_password=db_password)
+    wp_config_content = wp_config_template.format(db_name=db_name, db_user=db_user, db_password=db_password, project_name=project_name)
 
     with open('wp-config.php', 'w') as file:
         file.write(wp_config_content)
