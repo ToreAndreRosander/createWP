@@ -4,8 +4,13 @@ import subprocess
 
 def create_folder(project_name):
     folder_name = project_name.lower().replace(" ", "")
-    os.mkdir(folder_name)
-    return folder_name
+    destination_folder = os.path.join('/opt/bitnami/apache2/', folder_name)
+    if not os.path.exists(destination_folder):
+        os.mkdir(destination_folder)
+        return destination_folder
+    else:
+        print(f"Folder '{destination_folder}' already exists.")
+        return None
 
 def copy_folder_contents(source_folder, destination_folder):
     shutil.copytree(source_folder, destination_folder)
