@@ -7,5 +7,10 @@ This script takes user input and creates the needed database details, wp-config.
 It will first create a folder for your project in /opt/bitnami/apache2/, then it will copy the contents of the folder /home/bitnami/software/wordpress-no/.
 The database and database user will be created and a wp-config.php file will be generated with the supplied details.
 
+Change the paths of "destination_folder" and "source_folder" to fit your needs.
+
 ## my wp plugin skeleton
-This is a skeleton plugin that adds the most basic features, it creates a database table on activation, creates a rest API endpoint that lists data, creates an admin page to add data to the tables and a shortcode to display the data on the frontend [mwps_entries].
+This is a skeleton plugin that adds the most basic features.
+It creates a database table on activation named (wp prefix)mwps_entries for storing entries from the admin area.
+The plugin comes with a function that creates a rest API endpoint that returns the stored entries as JSON.
+It also includes a function that creates the shortcode [mwps_entries] to display entries on the frontend.

@@ -3,17 +3,20 @@
 Plugin Name: My wp plugin skeleton
 Plugin URI: https://rosander.no
 Description: A plugin skeleton for WordPress
-Version: 1.0.0
+Version: 0.9
 Author: Tore André Rosander
 Author URI: https://rosander.no
 License: GPL2
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
-Text Domain: my-wp-plugin-skeleton
-
-
 */
 
+// check if abs path is defined to prevent direct access
+if ( ! defined( 'ABSPATH' ) ) {
+    exit; // Exit if accessed directly
+}
+
 // Create the database table on plugin activation
+
 function mwps_create_table() {
     global $wpdb;
     $table_name = $wpdb->prefix . 'mwps_entries';
@@ -46,6 +49,8 @@ function mwps_admin_page_callback() {
 
     // Check if form has been submitted before loading the rest of the page
     if(isset($_POST['mwps_entry'] ) && ! empty( $_POST['mwps_entry'])) {
+
+        // Verify the nonce
         if(!isset($_POST['mwps_entry_nonce'] ) || ! wp_verify_nonce( $_POST['mwps_entry_nonce'], 'mwps_entry_action' ) ) {
             return; // Nonce did not verify
         }
@@ -53,17 +58,9 @@ function mwps_admin_page_callback() {
         $mwps_entry = sanitize_text_field( $_POST['mwps_entry'] );
 
         // Write entry into the database
-        $result = $wpdb->insert(
-            $table_name,
-            array(
-                'mwps_entry' => $mwps_entry,
-            ),
-            array(
-                '%s',
-            )
-        );
+        $result = $wpdb->insert($table_name,array('mwps_entry' => $mwps_entry), array('%s') );
 
-        if(false === $result) {
+        if(!$result) {
             // Error handling
         }
     }
@@ -79,15 +76,7 @@ function mwps_admin_page_callback() {
         $entry_id = absint($entry_id);
 
         // Delete entry from the database
-        $wpdb->delete(
-            $table_name,
-            array(
-                'id' => $entry_id,
-            ),
-            array(
-                '%d',
-            )
-        );
+        $wpdb->delete($table_name, array('id' => $entry_id), array('%d'));
     }
 
     // Retrieve all entries from the database
@@ -101,6 +90,7 @@ function mwps_admin_page_callback() {
         <form method="POST" action="">
             <label for="mwps_entry">Entry:</label>
             <input type="text" name="mwps_entry" id="mwps_entry" required>
+            <!-- Add nonce to the form for increased security -->
             <?php wp_nonce_field( 'mwps_entry_action', 'mwps_entry_nonce' ); ?>
             <input type="submit" value="Add Entry" class="button button-primary">
         </form>
@@ -145,29 +135,27 @@ function mwps_rest_api_init() {
         'callback' => 'mwps_get_entries',
     ) );
 }
-add_action( 'rest_api_init', 'mwps_rest_api_init' );
+add_action('rest_api_init', 'mwps_rest_api_init');
 
 // Retrieve entries for the REST API
 function mwps_get_entries() {
     global $wpdb;
     $table_name = $wpdb->prefix . 'mwps_entries';
+    $entries = $wpdb->get_results("SELECT mwps_entry, mwps_created FROM $table_name", ARRAY_A);
 
-    $entries = $wpdb->get_results( "SELECT mwps_entry, mwps_created FROM $table_name", ARRAY_A );
-
-    return rest_ensure_response( $entries );
+    return rest_ensure_response($entries);
 }
 
-// Create the shortcode to display entries on the frontend
-function mwps_entries_shortcode( $atts ) {
+// Display entries using the shortcode [mwps_entries]
+function mwps_entries_shortcode($atts) {
     global $wpdb;
     $table_name = $wpdb->prefix . 'mwps_entries';
-
-    $entries = $wpdb->get_results( "SELECT mwps_entry, mwps_created FROM $table_name", ARRAY_A );
+    $entries = $wpdb->get_results("SELECT mwps_entry, mwps_created FROM $table_name", ARRAY_A);
 
     if(!empty($entries)) {
         $output = '<ul>';
         foreach ( $entries as $entry ) {
-            $output .= '<li>' . esc_html( $entry['mwps_entry'] ) . ' - ' . esc_html( $entry['mwps_created'] ) . '</li>';
+            $output .= '<li>' . esc_html($entry['mwps_entry']) . ' - ' . esc_html($entry['mwps_created']) . '</li>';
         }
         $output .= '</ul>';
 
@@ -176,4 +164,4 @@ function mwps_entries_shortcode( $atts ) {
 
     return 'No entries found.';
 }
-add_shortcode( 'mwps_entries', 'mwps_entries_shortcode' );
+add_shortcode('mwps_entries', 'mwps_entries_shortcode');
