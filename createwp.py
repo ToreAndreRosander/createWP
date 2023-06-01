@@ -4,7 +4,7 @@ import subprocess
 
 def create_folder(project_name):
     folder_name = project_name.lower().replace(" ", "")
-    destination_folder = os.path.join('/opt/bitnami/apache2/', folder_name)
+    destination_folder = os.path.join('/etc/apache2/', folder_name)
     if not os.path.exists(destination_folder):
         os.mkdir(destination_folder)
         return destination_folder
@@ -61,7 +61,7 @@ def main():
     db_root_password = input("Enter database root password: ")
 
     folder_name = create_folder(project_name)
-    source_folder = '/home/bitnami/software/wordpress-no/'
+    source_folder = '/home/zero/software/wordpress-no/'
     copy_folder_contents(source_folder, folder_name)
 
     create_database(db_name, db_user, db_password, db_root_password)
